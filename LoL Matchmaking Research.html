@@ -1,0 +1,398 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LoL Matchmaking Research</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --fg: #e8eaf0;
+    --fg2: #9ca3b8;
+    --accent: #c89b3c;
+    --accent2: #1e88e5;
+    --border: #2e3350;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 max(24px, env(safe-area-inset-left, 0px));
+  }
+  .nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    gap: 16px;
+  }
+  .nav-logo {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--fg2);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color .15s;
+  }
+  .nav-links a:hover { color: var(--fg); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(160deg, #0d1526 0%, #1a1d27 60%, #0f1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px max(24px, env(safe-area-inset-left, 0px));
+  }
+  .hero-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(200,155,60,.12);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(200,155,60,.25);
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 600;
+    line-height: 1.25;
+    text-wrap: balance;
+    margin-bottom: 20px;
+    color: var(--fg);
+  }
+  .hero-sub {
+    color: var(--fg2);
+    font-size: 17px;
+    max-width: 640px;
+    margin-bottom: 32px;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 14px;
+    color: var(--fg2);
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px max(24px, env(safe-area-inset-left, 0px));
+    display: grid;
+    gap: 48px;
+  }
+
+  section h2 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  section p { color: var(--fg2); margin-bottom: 12px; }
+  section p:last-child { margin-bottom: 0; }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .card-num {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .card-label {
+    font-size: 13px;
+    color: var(--fg2);
+    font-weight: 500;
+  }
+
+  /* ── API TABLE ── */
+  .api-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .api-table th {
+    text-align: left;
+    color: var(--fg2);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .api-table td {
+    padding: 10px 12px;
+    color: var(--fg2);
+    border-bottom: 1px solid rgba(46,51,80,.5);
+    vertical-align: top;
+  }
+  .api-table td:first-child {
+    color: var(--accent2);
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+  }
+  .api-table tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; }
+
+  /* ── ETHICS ── */
+  .ethics-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+  .ethics-list li {
+    display: flex;
+    gap: 10px;
+    color: var(--fg2);
+    font-size: 15px;
+  }
+  .ethics-list li::before {
+    content: "✓";
+    color: #4caf76;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── CONTACT ── */
+  .contact-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .contact-box p { font-size: 15px; }
+  .contact-box a {
+    color: var(--accent2);
+    text-decoration: none;
+  }
+  .contact-box a:hover { text-decoration: underline; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px max(24px, env(safe-area-inset-left, 0px));
+    text-align: center;
+    color: var(--fg2);
+    font-size: 13px;
+  }
+  footer a { color: var(--fg2); }
+
+  @media (max-width: 500px) {
+    .nav-links { gap: 14px; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">LoL Matchmaking Research</span>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#data">Data</a></li>
+      <li><a href="#ethics">Ethics</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="hero-tag">Academic Research · CSUN</span>
+    <h1>Matchmaking Algorithm Outcomes and Player Engagement in League of Legends</h1>
+    <p class="hero-sub">
+      An empirical study examining how winning and losing streaks affect player
+      engagement behavior in competitive MOBA games, using large-scale ranked match data.
+    </p>
+    <div class="hero-meta">
+      <span><span class="dot"></span> Ziyang (Chane) Zhang, Ph.D.</span>
+      <span><span class="dot"></span> Department of Systems &amp; Operations Management</span>
+      <span><span class="dot"></span> David Nazarian College of Business and Economics, CSUN</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <section id="overview">
+    <h2>Research Overview</h2>
+    <p>
+      Matchmaking systems in competitive online games determine which players face each
+      other in every match. Beyond skill-balancing, these systems may inadvertently shape
+      sequences of wins and losses — streaks — that have downstream effects on player
+      motivation and continued engagement.
+    </p>
+    <p>
+      This study uses large-scale observational data from League of Legends ranked Solo/Duo
+      queues (North America server) to empirically examine how streak patterns relate to
+      player engagement outcomes, including session continuation, match frequency, and
+      behavioral indicators of motivation.
+    </p>
+    <p>
+      Existing research on matchmaking and engagement either relies on simulation-based
+      validation (Huang et al., 2019; Chen et al., 2026) or tests system-level effects
+      without isolating specific behavioral mechanisms (Fan et al., 2024). This study
+      addresses that gap by linking observable match sequences to engagement behavior
+      through a rank-progression framework.
+    </p>
+  </section>
+
+  <section>
+    <h2>Dataset Scope</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-num">Platinum+</div>
+        <div class="card-label">Player tier (NA server)</div>
+      </div>
+      <div class="card">
+        <div class="card-num">Queue 420</div>
+        <div class="card-label">Ranked Solo/Duo only</div>
+      </div>
+      <div class="card">
+        <div class="card-num">≤100</div>
+        <div class="card-label">Recent matches per player</div>
+      </div>
+      <div class="card">
+        <div class="card-num">Nov 5, 2026</div>
+        <div class="card-label">Data collection cutoff</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="data">
+    <h2>APIs Used</h2>
+    <div class="tbl-wrap">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+            <th>Data collected</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>match-v5</td>
+            <td>Match history &amp; participant stats</td>
+            <td>Win/loss, KDA, position, champion, damage, gold, CS, vision score</td>
+          </tr>
+          <tr>
+            <td>summoner-v4</td>
+            <td>Player identity resolution</td>
+            <td>PUUID lookup from summoner name</td>
+          </tr>
+          <tr>
+            <td>league-v4</td>
+            <td>Rank tier verification</td>
+            <td>Tier/division for sampling frame construction</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="ethics">
+    <h2>Data Ethics &amp; Privacy</h2>
+    <ul class="ethics-list">
+      <li>No personally identifiable information (PII) is stored or published.</li>
+      <li>All data is collected through Riot Games' official public API under their Terms of Service.</li>
+      <li>Player identifiers (PUUID, summoner ID) are pseudonymized prior to analysis.</li>
+      <li>Data is used solely for academic research and will not be sold or shared commercially.</li>
+      <li>Findings will be reported only in aggregate form in peer-reviewed academic publications.</li>
+      <li>No attempt is made to re-identify individual players from published results.</li>
+    </ul>
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <div class="contact-box">
+      <p><strong>Principal Investigator</strong></p>
+      <p>Ziyang (Chane) Zhang, Ph.D.<br>
+      Instructional Faculty, Department of Systems &amp; Operations Management<br>
+      David Nazarian College of Business and Economics<br>
+      California State University, Northridge (CSUN)</p>
+      <br>
+      <p>Email: <a href="mailto:zhangziyang1994@gmail.com">zhangziyang1994@gmail.com</a></p>
+      <p>Institution: <a href="https://www.csun.edu" target="_blank" rel="noopener">www.csun.edu</a></p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 Ziyang Zhang · California State University, Northridge ·
+  <a href="https://github.com/zhangziyang1994/lol-research" target="_blank" rel="noopener">GitHub</a>
+  · Not affiliated with Riot Games</p>
+</footer>
+
+</body>
+</html>
+
+</body></html>
